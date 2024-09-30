@@ -988,13 +988,13 @@ namespace Core
 
         public static void Login(Account account, int tryCount)
         {
-            // Setup update process information.
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.UseShellExecute = true;
-            // startInfo.FileName = updaterFileName;
-            // startInfo.Arguments = updateUrl;
-            startInfo.WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            startInfo.Verb = "runas";
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName =  "C:\\Program Files (x86)\\Steam\\steam.exe",
+                WorkingDirectory = "C:\\Program Files (x86)\\Steam\\",
+                UseShellExecute = true,
+                Arguments = "",
+            };
 
             Process steamProcess;
             try
@@ -1007,7 +1007,6 @@ namespace Core
                 return;
             }
 
-            // -noreactlogin parameter has been depecrated as of January 2023
             EnterCredentials(steamProcess, account, 0);
         }
     }
