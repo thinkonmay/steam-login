@@ -11,6 +11,7 @@ using Win32Interop.WinHandles;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using FlaUI.UIA3;
+using SAM.Core;
 
 namespace Core
 {
@@ -28,6 +29,8 @@ namespace Core
         public const string SECTION_COLUMNS = "Columns";
 
         public List<string> globalParameters;
+
+        public UserSettings User = new UserSettings();
 
         public const string VERSION = "Version";
 
@@ -254,6 +257,8 @@ namespace Core
 
         [DllImport("user32.dll")]
         static extern bool EnumThreadWindows(int dwThreadId, EnumThreadDelegate lpfn, IntPtr lParam);
+
+        private static readonly string eKey = "PRIVATE_KEY";
 
         #endregion
 
@@ -548,7 +553,7 @@ namespace Core
                     {
                         return LoginWindowState.Error;
                     }
-                    else if (inputs.Count == 0 && images.Count >= 2 && buttons.Count > 0)
+                    else if (inputs.Count == 0 && images.Count >= 2 && buttons.Count == 0)
                     {
                         return LoginWindowState.Selection;
                     }
@@ -570,7 +575,32 @@ namespace Core
             return LoginWindowState.Invalid;
         }
 
+        public static LoginWindowState HandleAccountSelection(WindowHandle loginWindow)
+        {
+            using (var automation = new UIA3Automation())
+            {
+                try
+                {
+                    AutomationElement window = automation.FromHandle(loginWindow.RawPtr);
 
+                    window.Focus();
+
+                    AutomationElement document = window.FindFirstDescendant(e => e.ByControlType(ControlType.Document));
+                    AutomationElement[] groups = document.FindAllChildren(e => e.ByControlType(ControlType.Group));
+
+                    Button addAccountButton = groups[groups.Length - 1].AsButton();
+                    addAccountButton.Invoke();
+
+                    return LoginWindowState.Login;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
+
+            return LoginWindowState.Invalid;
+        }
         public static LoginWindowState TryCredentialsEntry(WindowHandle loginWindow, string username, string password, bool remember)
         {
             using (var automation = new UIA3Automation())
@@ -862,10 +892,11 @@ namespace Core
             }
         }
 
-        public static void ClearSteamUserDataFolder(string steamPath, int sleepTime, int maxRetry)
+        public static void ClearSteamUserDataFolder(string steamPath, int sleepTime)
         {
             WindowHandle steamLoginWindow = GetLegacySteamLoginWindow();
             int waitCount = 0;
+            int maxRetry = 2;
 
             while (steamLoginWindow.IsValid && waitCount < maxRetry)
             {
@@ -964,6 +995,12 @@ namespace Core
 
                 state = WindowUtils.GetLoginWindowState(steamLoginWindow);
 
+                if (state == LoginWindowState.Selection)
+                {
+                    WindowUtils.HandleAccountSelection(steamLoginWindow);
+                    continue;
+                }
+
                 if (state == LoginWindowState.Login)
                 {
                     state = WindowUtils.TryCredentialsEntry(steamLoginWindow, account.Name, account.Password, false);
@@ -979,15 +1016,59 @@ namespace Core
                 state = WindowUtils.GetLoginWindowState(steamLoginWindow);
             }
 
-            PostLogin();
+            // PostLogin();
         }
 
         private static void PostLogin()
         {
+            if (settings.User.ClearUserData)
+            {
+                WindowUtils.ClearSteamUserDataFolder(settings.User.SteamPath, settings.User.SleepTime);
+            }
+            if (settings.User.CloseOnLogin)
+            {
+                // Dispatcher.Invoke(delegate () { Close(); });
+            }
+        }
+
+        private static void ShutdownSteam()
+        {
+            // Shutdown Steam process via command if it is already open.
+            ProcessStartInfo stopInfo = new ProcessStartInfo
+            {
+                FileName =  "C:\\Program Files (x86)\\Steam\\steam.exe",
+                WorkingDirectory = "C:\\Program Files (x86)\\Steam\\",
+                Arguments = "-shutdown"
+            };
+
+            try
+            {
+                Process SteamProc = Process.GetProcessesByName("Steam").FirstOrDefault();
+                Process[] WebClientProcs = Process.GetProcessesByName("steamwebhelper");
+                if (SteamProc != null)
+                {
+                    Process.Start(stopInfo);
+                    SteamProc.WaitForExit();
+
+                    foreach (Process proc in WebClientProcs)
+                    {
+                        proc.WaitForExit();
+                    }
+                }
+            }
+            catch
+            {
+                Console.WriteLine("No steam process found or steam failed to shutdown.");
+            }
         }
 
         public static void Login(Account account, int tryCount)
         {
+
+            // Make sure Username field is empty and Remember Password checkbox is unchecked.
+            ShutdownSteam();
+            AccountUtils.ClearAutoLoginUserKeyValues();
+
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName =  "C:\\Program Files (x86)\\Steam\\steam.exe",
