@@ -1,11 +1,6 @@
 using System.Diagnostics;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
-using SteamAuth;
 using System.Management;
 using Win32Interop.WinHandles;
 using FlaUI.Core.AutomationElements;
@@ -672,45 +667,6 @@ namespace Core
             return LoginWindowState.Invalid;
         }
 
-        public static LoginWindowState TryCodeEntry(WindowHandle loginWindow, string secret)
-        {
-            using (var automation = new UIA3Automation())
-            {
-                try
-                {
-                    AutomationElement window = automation.FromHandle(loginWindow.RawPtr);
-
-                    window.Focus();
-
-                    AutomationElement document = window.FindFirstDescendant(e => e.ByControlType(ControlType.Document));
-                    AutomationElement[] inputs = document.FindAllChildren(e => e.ByControlType(ControlType.Edit));
-
-                    string code = Generate2FACode(secret);
-
-                    try
-                    {
-                        for (int i = 0; i < inputs.Length; i++)
-                        {
-                            TextBox textBox = inputs[i].AsTextBox();
-                            textBox.Text = code[i].ToString();
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.Message);
-                        return LoginWindowState.Code;
-                    }
-
-                    return LoginWindowState.Success;
-                }
-                catch (Exception ex) 
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
-
-            return LoginWindowState.Invalid;
-        }
 
         public static Process WaitForSteamProcess(WindowHandle windowHandle)
         {
@@ -931,13 +887,6 @@ namespace Core
             return false;
         }
 
-        public static string Generate2FACode(string shared_secret)
-        {
-            SteamGuardAccount authAccount = new SteamGuardAccount { SharedSecret = shared_secret };
-            string code = authAccount.GenerateSteamGuardCode();
-            return code;
-        }
-
         
         private static void EnterCredentials(Process steamProcess, Account account, int tryCount)
         {
@@ -1062,13 +1011,8 @@ namespace Core
             }
         }
 
-        public static void Login(Account account, int tryCount)
+        public static void Login(Account account)
         {
-
-            // Make sure Username field is empty and Remember Password checkbox is unchecked.
-            ShutdownSteam();
-            AccountUtils.ClearAutoLoginUserKeyValues();
-
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName =  "C:\\Program Files (x86)\\Steam\\steam.exe",
@@ -1090,6 +1034,12 @@ namespace Core
 
             EnterCredentials(steamProcess, account, 0);
         }
-    }
 
+
+        public static void Logout()
+        {
+            ShutdownSteam();
+            AccountUtils.ClearAutoLoginUserKeyValues();
+        }
+    }
 }

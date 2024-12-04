@@ -1,23 +1,15 @@
 ﻿using Core;
 
-if (args.Length >= 2) // Check if at least two arguments are provided   
-{
-    string username = args[0]; // First argument as username
-    string password = args[1]; // Second argument as password
 
-    var acc = new Account
-    {
-        Name = username,
-        Password = password
-    };
-
-    try {
-        WindowUtils.Login(acc,1);
-    } catch (Exception e) {
-        Console.WriteLine(e);
+if (args.Length == 0) {
+    Console.WriteLine("login or logout");
+} else if (args.Length > 0 ) {
+    if (args[0] == "login") {
+        WindowUtils.Login(new Account {
+            Name = args[1],
+            Password = args[2]
+        });
+    } else if (args[0] == "logout"){
+        WindowUtils.Logout();
     }
-}
-else
-{
-    Console.WriteLine("Please provide both username and password.");
 }
