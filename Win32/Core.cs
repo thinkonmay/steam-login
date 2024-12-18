@@ -981,7 +981,13 @@ namespace Core
                 UseShellExecute = false,
                 Arguments = "",
             });
-            EnterCredentials(steamProcess, account, 0);
+
+            var trycount = 0;
+            while (trycount < 5)
+            {
+                EnterCredentials(steamProcess, account, trycount);
+                trycount++;
+            }
         }
 
 
