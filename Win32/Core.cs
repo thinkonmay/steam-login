@@ -605,7 +605,6 @@ namespace Core
 
                     if (signInButton.IsEnabled)
                     {
-                        Thread.Sleep(10000);
 
                         TextBox usernameBox = inputs[0].AsTextBox();
                         usernameBox.WaitUntilEnabled();
@@ -865,6 +864,7 @@ namespace Core
             }
 
             Console.WriteLine("valid client window");
+            Thread.Sleep(10000);
             WindowHandle steamLoginWindow = WindowUtils.GetSteamLoginWindow(steamProcess);
 
             while (!steamLoginWindow.IsValid)
