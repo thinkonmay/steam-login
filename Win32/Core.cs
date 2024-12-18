@@ -25,8 +25,6 @@ namespace Core
 
         public List<string> globalParameters;
 
-        public UserSettings User = new UserSettings();
-
         public const string VERSION = "Version";
 
         public const string CLEAR_USER_DATA = "ClearUserData";
@@ -213,7 +211,6 @@ namespace Core
         None,
         Invalid,
         Error,
-        Selection,
         Login,
         Code,
         Loading,
@@ -304,7 +301,7 @@ namespace Core
                 }
             }
             catch(Exception e) { 
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
             }
 
             return children;
@@ -427,7 +424,7 @@ namespace Core
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e.Message);
+                        Console.WriteLine(e.StackTrace);
                     }
                 }
             }
@@ -544,13 +541,10 @@ namespace Core
                             }
                         }
                     }
+
                     if (inputs.Count == 0 && images.Count == 0 && buttons.Count == 1)
                     {
                         return LoginWindowState.Error;
-                    }
-                    else if (inputs.Count == 0 && images.Count >= 2 && buttons.Count == 0)
-                    {
-                        return LoginWindowState.Selection;
                     }
                     else if (inputs.Count == 5)
                     {
@@ -563,39 +557,13 @@ namespace Core
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
                 }
             }
 
             return LoginWindowState.Invalid;
         }
 
-        public static LoginWindowState HandleAccountSelection(WindowHandle loginWindow)
-        {
-            using (var automation = new UIA3Automation())
-            {
-                try
-                {
-                    AutomationElement window = automation.FromHandle(loginWindow.RawPtr);
-
-                    window.Focus();
-
-                    AutomationElement document = window.FindFirstDescendant(e => e.ByControlType(ControlType.Document));
-                    AutomationElement[] groups = document.FindAllChildren(e => e.ByControlType(ControlType.Group));
-
-                    Button addAccountButton = groups[groups.Length - 1].AsButton();
-                    addAccountButton.Invoke();
-
-                    return LoginWindowState.Login;
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
-            }
-
-            return LoginWindowState.Invalid;
-        }
         public static LoginWindowState TryCredentialsEntry(WindowHandle loginWindow, string username, string password, bool remember)
         {
             using (var automation = new UIA3Automation())
@@ -660,7 +628,7 @@ namespace Core
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
                 }
             }
 
@@ -852,7 +820,7 @@ namespace Core
         {
             WindowHandle steamLoginWindow = GetLegacySteamLoginWindow();
             int waitCount = 0;
-            int maxRetry = 2;
+            int maxRetry = 10;
 
             while (steamLoginWindow.IsValid && waitCount < maxRetry)
             {
@@ -944,12 +912,6 @@ namespace Core
 
                 state = WindowUtils.GetLoginWindowState(steamLoginWindow);
 
-                if (state == LoginWindowState.Selection)
-                {
-                    WindowUtils.HandleAccountSelection(steamLoginWindow);
-                    continue;
-                }
-
                 if (state == LoginWindowState.Login)
                 {
                     state = WindowUtils.TryCredentialsEntry(steamLoginWindow, account.Name, account.Password, false);
@@ -970,24 +932,22 @@ namespace Core
 
         private static void PostLogin()
         {
-            if (settings.User.ClearUserData)
-            {
-                WindowUtils.ClearSteamUserDataFolder(settings.User.SteamPath, settings.User.SleepTime);
-            }
-            if (settings.User.CloseOnLogin)
-            {
-                // Dispatcher.Invoke(delegate () { Close(); });
-            }
+            var path = AccountUtils.GetSteamPath();
+            var dir = Path.GetDirectoryName(path);
+            WindowUtils.ClearSteamUserDataFolder(dir, 5000);
         }
 
         private static void ShutdownSteam()
         {
-            // Shutdown Steam process via command if it is already open.
-            ProcessStartInfo stopInfo = new ProcessStartInfo
-            {
-                FileName =  "C:\\Program Files (x86)\\Steam\\steam.exe",
-                WorkingDirectory = "C:\\Program Files (x86)\\Steam\\",
-                Arguments = "-shutdown"
+            var path = AccountUtils.GetSteamPath();
+            var dir = Path.GetDirectoryName(path);
+            var stopInfo = new ProcessStartInfo{
+                FileName =  path,
+                WorkingDirectory = dir,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                Arguments = "-shutdown",
             };
 
             try
@@ -996,9 +956,7 @@ namespace Core
                 Process[] WebClientProcs = Process.GetProcessesByName("steamwebhelper");
                 if (SteamProc != null)
                 {
-                    Process.Start(stopInfo);
-                    SteamProc.WaitForExit();
-
+                    Process.Start(stopInfo).WaitForExit();
                     foreach (Process proc in WebClientProcs)
                     {
                         proc.WaitForExit();
@@ -1013,25 +971,16 @@ namespace Core
 
         public static void Login(Account account)
         {
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                FileName =  "C:\\Program Files (x86)\\Steam\\steam.exe",
-                WorkingDirectory = "C:\\Program Files (x86)\\Steam\\",
-                UseShellExecute = true,
+            var path = AccountUtils.GetSteamPath();
+            var dir = Path.GetDirectoryName(path);
+            var steamProcess = Process.Start(new ProcessStartInfo{
+                FileName =  path,
+                WorkingDirectory = dir,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
                 Arguments = "",
-            };
-
-            Process steamProcess;
-            try
-            {
-                steamProcess = Process.Start(startInfo);
-            }
-            catch (Exception m)
-            {
-                Console.WriteLine(m.Message);
-                return;
-            }
-
+            });
             EnterCredentials(steamProcess, account, 0);
         }
 

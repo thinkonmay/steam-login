@@ -1,3 +1,4 @@
+using System.Security.AccessControl;
 using Microsoft.Win32;
        
 namespace SAM.Core
@@ -27,8 +28,17 @@ namespace SAM.Core
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
             }
+        }
+
+        public static string GetSteamPath()
+        {
+            RegistryKey localKey = Microsoft.Win32.Registry.ClassesRoot;
+            var local = localKey.OpenSubKey(@"steam\\Shell\\Open\\Command",RegistryRights.QueryValues);
+            var val = local.GetValue("");
+            local.Close();
+            return val.ToString().Split("\"")[1];
         }
     }
 }

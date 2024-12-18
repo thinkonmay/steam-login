@@ -3,11 +3,16 @@
   <PropertyGroup>
   <OutputType></OutputType>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <RootNamespace>steam_login</RootNamespace>
+
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+
     <Nullable>enable</Nullable>
+    <RootNamespace>steam_login</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>false</UseWPF>
+
   </PropertyGroup>
 
   <ItemGroup>
