@@ -605,6 +605,8 @@ namespace Core
 
                     if (signInButton.IsEnabled)
                     {
+                        Thread.Sleep(10000);
+
                         TextBox usernameBox = inputs[0].AsTextBox();
                         usernameBox.WaitUntilEnabled();
                         usernameBox.Text = username;
@@ -613,7 +615,6 @@ namespace Core
                         passwordBox.WaitUntilEnabled();
                         passwordBox.Text = password;
 
-                        Thread.Sleep(10000);
                         signInButton.Focus();
                         signInButton.WaitUntilEnabled();
                         signInButton.Invoke();
