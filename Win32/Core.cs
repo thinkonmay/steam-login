@@ -554,6 +554,10 @@ namespace Core
                     {
                         return LoginWindowState.Login;
                     }
+                    else 
+                    {
+                        return LoginWindowState.Success;
+                    }
                 }
                 catch (Exception e)
                 {
@@ -564,7 +568,7 @@ namespace Core
             return LoginWindowState.Invalid;
         }
 
-        public static LoginWindowState TryCredentialsEntry(WindowHandle loginWindow, string username, string password, bool remember)
+        public static void TryCredentialsEntry(WindowHandle loginWindow, string username, string password)
         {
             using (var automation = new UIA3Automation())
             {
@@ -609,21 +613,11 @@ namespace Core
                         passwordBox.WaitUntilEnabled();
                         passwordBox.Text = password;
 
-                        Button checkBoxButton = groups[0].AsButton();
-                        bool isChecked = checkBoxButton.FindFirstChild(e => e.ByControlType(ControlType.Image)) != null;
-
-                        if (remember != isChecked)
-                        {
-                            checkBoxButton.Focus();
-                            checkBoxButton.WaitUntilEnabled();
-                            checkBoxButton.Invoke();
-                        }
-
                         signInButton.Focus();
                         signInButton.WaitUntilEnabled();
                         signInButton.Invoke();
 
-                        return LoginWindowState.Success;
+                        return;
                     }
                 }
                 catch (Exception e)
@@ -632,7 +626,7 @@ namespace Core
                 }
             }
 
-            return LoginWindowState.Invalid;
+            return;
         }
 
 
@@ -856,17 +850,16 @@ namespace Core
         }
 
         
-        private static void EnterCredentials(Process steamProcess, Account account, int tryCount)
+        private static bool EnterCredentials(Process steamProcess, Account account, int tryCount)
         {
             if (steamProcess.HasExited)
             {
-                return;
+                return false;
             }
 
             if (tryCount > 0 && WindowUtils.GetMainSteamClientWindow(steamProcess).IsValid)
             {
                 PostLogin();
-                return;
             }
 
             Console.WriteLine("valid client window");
@@ -887,7 +880,7 @@ namespace Core
                     }
                     else
                     {
-                        return;
+                        return false;
                     }
                 }
 
@@ -907,7 +900,7 @@ namespace Core
             {
                 if (steamProcess.HasExited || state == LoginWindowState.Error)
                 {
-                    return;
+                    return false;
                 }
 
                 Thread.Sleep(100);
@@ -918,7 +911,7 @@ namespace Core
                 if (state == LoginWindowState.Login)
                 {
                     Console.WriteLine("try credential entry");
-                    state = WindowUtils.TryCredentialsEntry(steamLoginWindow, account.Name, account.Password, false);
+                    WindowUtils.TryCredentialsEntry(steamLoginWindow, account.Name, account.Password);
                 }
             }
 
@@ -932,11 +925,13 @@ namespace Core
                 Console.WriteLine("window state "+state.ToString());
             }
 
-            // PostLogin();
+            PostLogin();
+            return true;
         }
 
         private static void PostLogin()
         {
+            Console.WriteLine("do post login");
             var path = AccountUtils.GetSteamPath();
             var dir = Path.GetDirectoryName(path);
             WindowUtils.ClearSteamUserDataFolder(dir, 5000);
@@ -990,7 +985,9 @@ namespace Core
             var trycount = 0;
             while (trycount < 1)
             {
-                EnterCredentials(steamProcess, account, trycount);
+                if(EnterCredentials(steamProcess, account, trycount))
+                    break;
+
                 trycount++;
             }
         }
