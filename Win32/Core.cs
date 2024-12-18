@@ -613,6 +613,7 @@ namespace Core
                         passwordBox.WaitUntilEnabled();
                         passwordBox.Text = password;
 
+                        Thread.Sleep(10000);
                         signInButton.Focus();
                         signInButton.WaitUntilEnabled();
                         signInButton.Invoke();
@@ -988,6 +989,7 @@ namespace Core
                 if(EnterCredentials(steamProcess, account, trycount))
                     break;
 
+                Thread.Sleep(5000);
                 trycount++;
             }
         }
