@@ -869,6 +869,7 @@ namespace Core
                 return;
             }
 
+            Console.WriteLine("valid client window");
             WindowHandle steamLoginWindow = WindowUtils.GetSteamLoginWindow(steamProcess);
 
             while (!steamLoginWindow.IsValid)
@@ -898,6 +899,7 @@ namespace Core
                 Thread.Sleep(100);
                 steamLoginWindow = WindowUtils.GetSteamLoginWindow(steamProcess);
             }
+            Console.WriteLine("got login window");
 
             LoginWindowState state = LoginWindowState.None;
 
@@ -912,8 +914,10 @@ namespace Core
 
                 state = WindowUtils.GetLoginWindowState(steamLoginWindow);
 
+                Console.WriteLine("login window state "+state.ToString());
                 if (state == LoginWindowState.Login)
                 {
+                    Console.WriteLine("try credential entry");
                     state = WindowUtils.TryCredentialsEntry(steamLoginWindow, account.Name, account.Password, false);
                 }
             }
@@ -925,6 +929,7 @@ namespace Core
             {
                 Thread.Sleep(100);
                 state = WindowUtils.GetLoginWindowState(steamLoginWindow);
+                Console.WriteLine("window state "+state.ToString());
             }
 
             // PostLogin();
@@ -983,7 +988,7 @@ namespace Core
             });
 
             var trycount = 0;
-            while (trycount < 5)
+            while (trycount < 1)
             {
                 EnterCredentials(steamProcess, account, trycount);
                 trycount++;
