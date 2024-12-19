@@ -361,7 +361,7 @@ void Close() {
     WaitProcessExit();
 }
 
-if (true) {
+if (args.Length == 3 && args[0] == "login") {
     if (SteamIsRunning())
         Close();
 
@@ -379,7 +379,8 @@ if (true) {
     for (;;) {
         Thread.Sleep(1000);
         var all = GetAllElements();
-        if (all.Any(x => x.Contains("Please check your password"))){
+        if (all.Any(x => x.Contains("Please check your password")) || 
+            all.Any(x => x.Contains("Connection Problem"))){
             Console.WriteLine("Login failed");
             Close();
             break;
@@ -392,8 +393,8 @@ if (true) {
             Console.WriteLine("Logging in");
         } else if (all.Any(x => x.Contains("SIGN IN WITH ACCOUNT NAME"))){
             Console.WriteLine("Filling signin window");
-            FillTextBox("SIGN IN WITH ACCOUNT NAME","pf7yq3uu8ry9");
-            FillTextBox("PASSWORD","Tu2Ww3Uk1Ok6");
+            FillTextBox("SIGN IN WITH ACCOUNT NAME",args[1]);
+            FillTextBox("PASSWORD",args[2]);
             ClickButton("Sign in");
         } else if (all.Any(x => x.Contains("LIBRARY")) || all.Any(x => x.Contains("STORE"))){
             InvokeButton("LIBRARY");
@@ -401,8 +402,8 @@ if (true) {
             break;
         }
     }
-} else {
-    GetAllElements();
-    // Close();
-    // Console.WriteLine("Shutdown success");
-}
+} else if (args.Length == 1 && args[0] == "logout"){
+    Close();
+    Console.WriteLine("Shutdown success");
+} else 
+    Console.WriteLine("login or logout");
