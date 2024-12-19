@@ -4,7 +4,7 @@
   <OutputType></OutputType>
     <OutputType>Exe</OutputType>
 
-    <TargetFramework>net9.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
