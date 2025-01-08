@@ -447,7 +447,7 @@ if (args.Length == 2 && args[0] == "customurl"){
     var res = Base64Decode(url).Split(":");
     Login(res[0],res[1]);
 } else if (args.Length == 3 && args[0] == "login"){
-    Login(args[0],args[2]);
+    Login(args[1],args[2]);
 } else if (args.Length == 1 && args[0] == "logout"){
     Close();
 } else 
