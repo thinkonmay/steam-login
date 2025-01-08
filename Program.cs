@@ -134,7 +134,7 @@ void InvokeButton(string name) {
                         return true;
                     });
                 } catch (Exception e){
-                    Console.WriteLine(e.StackTrace);
+                    Console.WriteLine(e.Message + e.StackTrace);
 
                 }
             }
@@ -157,7 +157,9 @@ List<string> GetAllElements() {
             {
                 try {
                     var window = automation.FromHandle(new WindowHandle(hndl).RawPtr);
-                    if (window.Name == "")
+                    if (window == null)
+                        continue;
+                    else if (window.Name == "")
                         continue;
                     else if (window.Name == "MSCTFIME UI" || 
                              window.Name == "Default IME") 
@@ -175,10 +177,7 @@ List<string> GetAllElements() {
 
                         return true;
                     });
-                } catch (Exception e){
-                    Console.WriteLine(e.StackTrace);
-
-                }
+                } catch (Exception e){}
             }
         }
     }
@@ -225,7 +224,7 @@ void FillTextBox(string prev_element,string val) {
                         return true;
                     });
                 } catch (Exception e){
-                    Console.WriteLine(e.StackTrace);
+                    Console.WriteLine(e.Message + e.StackTrace);
 
                 }
             }
@@ -280,7 +279,7 @@ void ClickButton(string name) {
                         return true;
                     });
                 } catch (Exception e){
-                    Console.WriteLine(e.StackTrace);
+                    Console.WriteLine(e.Message + e.StackTrace);
 
                 }
             }
@@ -338,7 +337,7 @@ void ClickButtonPrev(string name) {
 
 
                 } catch (Exception e){
-                    Console.WriteLine(e.StackTrace);
+                    Console.WriteLine(e.Message + e.StackTrace);
 
                 }
             }
@@ -377,7 +376,7 @@ if (args.Length == 3 && args[0] == "login") {
 
 
     for (;;) {
-        Thread.Sleep(1000);
+        Thread.Sleep(100);
         var all = GetAllElements();
         if (all.Any(x => x.Contains("Please check your password")) || 
             all.Any(x => x.Contains("Connection Problem"))){
