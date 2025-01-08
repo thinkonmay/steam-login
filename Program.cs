@@ -375,14 +375,15 @@ if (args.Length == 3 && args[0] == "login") {
     });
 
 
-    for (;;) {
+    var time = DateTime.Now;
+    while ((DateTime.Now - time) < TimeSpan.FromMinutes(3)) {
         Thread.Sleep(100);
         var all = GetAllElements();
         if (all.Any(x => x.Contains("Please check your password")) || 
             all.Any(x => x.Contains("Connection Problem"))){
             Console.WriteLine("Login failed");
             Close();
-            break;
+            return;
         } else if (all.Any(x => x.Contains("Add Account"))){
             Console.WriteLine("Picking account");
             ClickButtonPrev("Add Account");
@@ -398,9 +399,12 @@ if (args.Length == 3 && args[0] == "login") {
         } else if (all.Any(x => x.Contains("LIBRARY")) || all.Any(x => x.Contains("STORE"))){
             InvokeButton("LIBRARY");
             Console.WriteLine("Login success");
-            break;
+            return;
         }
     }
+
+    Console.WriteLine("Timeout login to account");
+    return;
 } else if (args.Length == 1 && args[0] == "logout"){
     Close();
     Console.WriteLine("Shutdown success");
