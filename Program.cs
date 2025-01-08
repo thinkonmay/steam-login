@@ -1,5 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System.Buffers.Text;
+using System.Diagnostics;
 using System.Management;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using FlaUI.Core.AutomationElements;
@@ -78,6 +80,22 @@ string GetSteamPath()
     var val = local.GetValue("");
     local.Close();
     return val.ToString().Split("\"")[1];
+}
+
+void RegisterCustomURL()
+{
+    var  path = Process.GetCurrentProcess().MainModule.FileName;
+    var ukey = Registry.CurrentUser.OpenSubKey("Software", true);
+    ukey = ukey.OpenSubKey("Classes", true);
+
+    var key = ukey.CreateSubKey("thinkmay");
+    key.SetValue("URL Protocol", "");
+    key.SetValue("", "thinkmay procotol");
+    key.CreateSubKey(@"shell\open\command").SetValue(string.Empty, path + " customurl %1");
+
+    key.Close();
+    ukey.Close();
+    return;
 }
 
 bool IterateElements(AutomationElement element, Func<AutomationElement,bool> fun) {
@@ -360,7 +378,9 @@ void Close() {
     WaitProcessExit();
 }
 
-if (args.Length == 3 && args[0] == "login") {
+
+void 
+Login(string username, string password) {
     if (SteamIsRunning())
         Close();
 
@@ -393,8 +413,8 @@ if (args.Length == 3 && args[0] == "login") {
             Console.WriteLine("Logging in");
         } else if (all.Any(x => x.Contains("SIGN IN WITH ACCOUNT NAME"))){
             Console.WriteLine("Filling signin window");
-            FillTextBox("SIGN IN WITH ACCOUNT NAME",args[1]);
-            FillTextBox("PASSWORD",args[2]);
+            FillTextBox("SIGN IN WITH ACCOUNT NAME",username);
+            FillTextBox("PASSWORD",password);
             ClickButton("Sign in");
         } else if (all.Any(x => x.Contains("LIBRARY")) || all.Any(x => x.Contains("STORE"))){
             InvokeButton("LIBRARY");
@@ -405,8 +425,30 @@ if (args.Length == 3 && args[0] == "login") {
 
     Console.WriteLine("Timeout login to account");
     return;
+}
+
+string Base64Encode(string plainText) 
+{
+    var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+    return System.Convert.ToBase64String(plainTextBytes);
+}
+
+string Base64Decode(string base64EncodedData) 
+{
+    var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+    return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+}
+
+
+if (args.Length == 2 && args[0] == "customurl"){
+    var url = args[1]
+        .Replace("thinkmay://","") 
+        .Replace("/","");
+    var res = Base64Decode(url).Split(":");
+    Login(res[0],res[1]);
+} else if (args.Length == 3 && args[0] == "login"){
+    Login(args[0],args[2]);
 } else if (args.Length == 1 && args[0] == "logout"){
     Close();
-    Console.WriteLine("Shutdown success");
 } else 
-    Console.WriteLine("login or logout");
+    RegisterCustomURL();

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
   <OutputType></OutputType>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
 
     <TargetFramework>net8.0-windows</TargetFramework>
     <PublishSingleFile>true</PublishSingleFile>
