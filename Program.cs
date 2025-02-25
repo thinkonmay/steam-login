@@ -379,7 +379,7 @@ void Close() {
 }
 
 
-void 
+bool
 Login(string username, string password) {
     if (SteamIsRunning())
         Close();
@@ -403,7 +403,7 @@ Login(string username, string password) {
             all.Any(x => x.Contains("Connection Problem"))){
             Console.WriteLine("Login failed");
             Close();
-            return;
+            return false;
         } else if (all.Any(x => x.Contains("Add Account"))){
             Console.WriteLine("Picking account");
             ClickButtonPrev("Add Account");
@@ -419,12 +419,12 @@ Login(string username, string password) {
         } else if (all.Any(x => x.Contains("LIBRARY")) || all.Any(x => x.Contains("STORE"))){
             InvokeButton("LIBRARY");
             Console.WriteLine("Login success");
-            return;
+            return true;
         }
     }
 
     Console.WriteLine("Timeout login to account");
-    return;
+    return false;
 }
 
 string Base64Encode(string plainText) 
@@ -445,9 +445,15 @@ if (args.Length == 2 && args[0] == "customurl"){
         .Replace("thinkmay://","") 
         .Replace("/","");
     var res = Base64Decode(url).Split(":");
-    Login(res[0],res[1]);
+    if (Login(res[0],res[1]))
+        Environment.Exit(0);
+    else 
+        Environment.Exit(-1);
 } else if (args.Length == 3 && args[0] == "login"){
-    Login(args[1],args[2]);
+    if (Login(args[1],args[2]))
+        Environment.Exit(0);
+    else 
+        Environment.Exit(-1);
 } else if (args.Length == 1 && args[0] == "logout"){
     Close();
 } else 
