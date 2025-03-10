@@ -407,26 +407,28 @@ Login(string username, string password) {
     while ((DateTime.Now - time) < TimeSpan.FromMinutes(3)) {
         Thread.Sleep(100);
         var all = GetAllElements();
-        if (all.Any(x => x.Contains("Please check your password")) || //Login_CheckCredentials
-            all.Any(x => x.Contains("Connection Problem"))){ //Login_Error_Network_Title
+        if (all.Count == 0)
+            continue;
+        if (CheckExistKey(all, "Login_CheckCredentials") || 
+            CheckExistKey(all, "Login_Error_Network_Title")){
             Console.WriteLine("Login failed");
             Close();
             return false;
-        } else if (all.Any(x => x.Contains("Add Account"))){//Login_AddAccount
+        } else if (CheckExistKey(all, "Login_AddAccount")){
             Console.WriteLine("Picking account");
-            ClickButtonPrev("Add Account"); 
-        } else if (all.Any(x => x.Contains("Loading user data"))){  //Login_LoadingLibrary
+            ClickButtonPrev(FindKey(all, "Login_AddAccount"));
+        } else if (CheckExistKey(all, "Login_LoadingLibrary")){
             Console.WriteLine("Logging in");
-        } else if (all.Any(x => x.Contains("Logging in"))){ //Login_WaitingForServer
+        } else if (CheckExistKey(all, "Login_WaitingForServer")){ 
             Console.WriteLine("Logging in"); 
-        } else if (all.Any(x => x.Contains("SIGN IN WITH ACCOUNT NAME"))){ //Login_SignIn_WithAccountName
+        } else if (CheckExistKey(all, "Login_SignIn_WithAccountName", true)){
             Console.WriteLine("Filling signin window");
-            FillTextBox("SIGN IN WITH ACCOUNT NAME",username); //Login_SignIn_WithAccountName ? UPPERCASE
-            FillTextBox("PASSWORD",password); //Login_Password
-            ClickButton("Sign in"); //Login_SignIn
-
-
+            FillTextBox(FindKey(all, "Login_SignIn_WithAccountName", true), username);
+            FillTextBox(FindKey(all, "Login_Password", true), password);
+            ClickButton(FindKey(all, "Login_SignIn")); 
         } else if (all.Any(x => x.Contains("LIBRARY")) || all.Any(x => x.Contains("STORE"))){
+
+
             InvokeButton("LIBRARY"); //todo: find the new way to invoke this button, such as script import
             Console.WriteLine("Login success");
             return true;
@@ -452,28 +454,70 @@ string Base64Decode(string base64EncodedData)
  var translations = LocalizationHelper.GetLocalizedValues("SignIn_Title");
 
 
-Console.WriteLine($"Translations for '{"SignIn_Title"}':");
-foreach (var entry in translations)
+bool CheckExistKey(List<string> all, string key, bool isUpperCase = false)
 {
-    Console.WriteLine($"{entry.Key}: {entry.Value}");
+    if (all.Count == 0)
+        return false;
+
+    var trans = LocalizationHelper.GetLocalizedValues(key);
+    if (isUpperCase)
+        trans = trans.Select(x => x.ToUpper()).ToArray();
+
+    for (int i = 0; i < all.Count; i++){
+        string content = all.ElementAt(i);
+
+        if (content == "")
+            continue;
+
+        if(trans.Any(x => x.Equals(content))){
+            return true;
+        }
+    }
+
+    return false;
 }
 
-// if (args.Length == 2 && args[0] == "customurl"){
-//     var url = args[1]
-//         .Replace("thinkmay://","") 
-//         .Replace("/","");
+string FindKey(List<string> all, string key, bool isUpperCase = false)
+{
+
+    if (all.Count == 0)
+        return "";
+
+    var trans = LocalizationHelper.GetLocalizedValues(key);
+    if (isUpperCase)
+        trans = trans.Select(x => x.ToUpper()).ToArray();
+
+    for (int i = 0; i < all.Count; i++){
+        string content = all.ElementAt(i);
+
+        if (content == "")
+            continue;
+
+        if(trans.Any(x => x.Equals(content))){
+            return content;
+        }
+
+    }
+
+    return "";
+}
+
+if (args.Length == 2 && args[0] == "customurl"){
+    var url = args[1]
+        .Replace("thinkmay://","") 
+        .Replace("/","");
     
-//     var res = Base64Decode(url).Split(":");
-//     if (Login(res[0],res[1]))
-//         Environment.Exit(0);
-//     else 
-//         Environment.Exit(-1);
-// } else if (args.Length == 3 && args[0] == "login"){
-//     if (Login(args[1],args[2]))
-//         Environment.Exit(0);
-//     else 
-//         Environment.Exit(-1);
-// } else if (args.Length == 1 && args[0] == "logout"){
-//     Close();
-// } else 
-//     RegisterCustomURL();
+    var res = Base64Decode(url).Split(":");
+    if (Login(res[0],res[1]))
+        Environment.Exit(0);
+    else 
+        Environment.Exit(-1);
+} else if (args.Length == 3 && args[0] == "login"){
+    if (Login(args[1],args[2]))
+        Environment.Exit(0);
+    else 
+        Environment.Exit(-1);
+} else if (args.Length == 1 && args[0] == "logout"){
+    Close();
+} else 
+    RegisterCustomURL();

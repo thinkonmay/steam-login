@@ -5,29 +5,26 @@ using Newtonsoft.Json.Linq;
 
 class LocalizationHelper
 {
-    public static Dictionary<string, string> GetLocalizedValues(string key)
+    public static string[] GetLocalizedValues(string key)
     {
         string localizationFolder = Path.Combine(Directory.GetCurrentDirectory(), "localization");
-        Dictionary<string, string> values = new Dictionary<string, string>();
+        List<string> values = new List<string>();
 
         if (!Directory.Exists(localizationFolder))
         {
             Console.WriteLine("Localization folder not found.");
-            return values;
+            return values.ToArray();
         }
 
         foreach (var file in Directory.GetFiles(localizationFolder, "*.json"))
         {
-            Console.WriteLine(file);
-            string language = Path.GetFileNameWithoutExtension(file);
-
-
+            // string language = Path.GetFileNameWithoutExtension(file);
             try
             {
                 var jsonData = JObject.Parse(File.ReadAllText(file));
                 if (jsonData.TryGetValue(key, out JToken value))
                 {
-                    values[language] = value.ToString();
+                    values.Add(value.ToString());
                 }
             }
             catch (Exception ex)
@@ -36,7 +33,8 @@ class LocalizationHelper
             }
         }
 
-        return values;
+
+        return values.ToArray();
     }
   
 }
