@@ -449,7 +449,14 @@ string Base64Decode(string base64EncodedData)
     return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
 }
 
-Console.WriteLine(LocalizationHelper.GetLocalizedValues("Login_SignIn"));
+ var translations = LocalizationHelper.GetLocalizedValues("SignIn_Title");
+
+
+Console.WriteLine($"Translations for '{"SignIn_Title"}':");
+foreach (var entry in translations)
+{
+    Console.WriteLine($"{entry.Key}: {entry.Value}");
+}
 
 // if (args.Length == 2 && args[0] == "customurl"){
 //     var url = args[1]
