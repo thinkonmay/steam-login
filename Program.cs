@@ -190,8 +190,9 @@ List<string> GetAllElements() {
 
                     window.Focus();
                     IterateElements(window,element => {
-                        if (element.Name != null)
+                        if (element.Name != null){
                             res.Add(element.Name);
+                        }
 
                         return true;
                     });
@@ -378,6 +379,13 @@ void Close() {
     WaitProcessExit();
 }
 
+void Localize(string elementId){
+    // read all file in list /localization
+    // find the id in json file match with elementId
+    // get specific value for every language
+    // => find match value and return true;
+}
+
 
 bool
 Login(string username, string password) {
@@ -399,25 +407,27 @@ Login(string username, string password) {
     while ((DateTime.Now - time) < TimeSpan.FromMinutes(3)) {
         Thread.Sleep(100);
         var all = GetAllElements();
-        if (all.Any(x => x.Contains("Please check your password")) || 
-            all.Any(x => x.Contains("Connection Problem"))){
+        if (all.Any(x => x.Contains("Please check your password")) || //Login_CheckCredentials
+            all.Any(x => x.Contains("Connection Problem"))){ //Login_Error_Network_Title
             Console.WriteLine("Login failed");
             Close();
             return false;
-        } else if (all.Any(x => x.Contains("Add Account"))){
+        } else if (all.Any(x => x.Contains("Add Account"))){//Login_AddAccount
             Console.WriteLine("Picking account");
-            ClickButtonPrev("Add Account");
-        } else if (all.Any(x => x.Contains("Loading user data"))){
+            ClickButtonPrev("Add Account"); 
+        } else if (all.Any(x => x.Contains("Loading user data"))){  //Login_LoadingLibrary
             Console.WriteLine("Logging in");
-        } else if (all.Any(x => x.Contains("Logging in"))){
-            Console.WriteLine("Logging in");
-        } else if (all.Any(x => x.Contains("SIGN IN WITH ACCOUNT NAME"))){
+        } else if (all.Any(x => x.Contains("Logging in"))){ //Login_WaitingForServer
+            Console.WriteLine("Logging in"); 
+        } else if (all.Any(x => x.Contains("SIGN IN WITH ACCOUNT NAME"))){ //Login_SignIn_WithAccountName
             Console.WriteLine("Filling signin window");
-            FillTextBox("SIGN IN WITH ACCOUNT NAME",username);
-            FillTextBox("PASSWORD",password);
-            ClickButton("Sign in");
+            FillTextBox("SIGN IN WITH ACCOUNT NAME",username); //Login_SignIn_WithAccountName ? UPPERCASE
+            FillTextBox("PASSWORD",password); //Login_Password
+            ClickButton("Sign in"); //Login_SignIn
+
+
         } else if (all.Any(x => x.Contains("LIBRARY")) || all.Any(x => x.Contains("STORE"))){
-            InvokeButton("LIBRARY");
+            InvokeButton("LIBRARY"); //todo: find the new way to invoke this button, such as script import
             Console.WriteLine("Login success");
             return true;
         }
@@ -439,22 +449,24 @@ string Base64Decode(string base64EncodedData)
     return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
 }
 
+Console.WriteLine(LocalizationHelper.GetLocalizedValues("Login_SignIn"));
 
-if (args.Length == 2 && args[0] == "customurl"){
-    var url = args[1]
-        .Replace("thinkmay://","") 
-        .Replace("/","");
-    var res = Base64Decode(url).Split(":");
-    if (Login(res[0],res[1]))
-        Environment.Exit(0);
-    else 
-        Environment.Exit(-1);
-} else if (args.Length == 3 && args[0] == "login"){
-    if (Login(args[1],args[2]))
-        Environment.Exit(0);
-    else 
-        Environment.Exit(-1);
-} else if (args.Length == 1 && args[0] == "logout"){
-    Close();
-} else 
-    RegisterCustomURL();
+// if (args.Length == 2 && args[0] == "customurl"){
+//     var url = args[1]
+//         .Replace("thinkmay://","") 
+//         .Replace("/","");
+    
+//     var res = Base64Decode(url).Split(":");
+//     if (Login(res[0],res[1]))
+//         Environment.Exit(0);
+//     else 
+//         Environment.Exit(-1);
+// } else if (args.Length == 3 && args[0] == "login"){
+//     if (Login(args[1],args[2]))
+//         Environment.Exit(0);
+//     else 
+//         Environment.Exit(-1);
+// } else if (args.Length == 1 && args[0] == "logout"){
+//     Close();
+// } else 
+//     RegisterCustomURL();
