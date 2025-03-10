@@ -2,8 +2,8 @@
 
   <PropertyGroup>
   <OutputType></OutputType>
-    <!-- <OutputType>WinExe</OutputType> -->
-    <OutputType>exe</OutputType>
+    <OutputType>WinExe</OutputType>
+    <!-- <OutputType>exe</OutputType> -->
 
     <TargetFramework>net8.0-windows</TargetFramework>
     <PublishSingleFile>true</PublishSingleFile>

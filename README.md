@@ -23,7 +23,8 @@ This project is a Windows application that automates the login process for Steam
 To start the application, run the project in your IDE or use the following command in the terminal:
 
 ```bash
-dotnet run "username" "password"
+# login flow
+dotnet run login abc xyz
 ```
 
 ## Build
