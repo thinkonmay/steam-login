@@ -1,5 +1,5 @@
 run:
-	dotnet run lyiihua Gyr28c9xhT8Usl
+	dotnet run login abc xyz
 build:
 	dotnet build
 
