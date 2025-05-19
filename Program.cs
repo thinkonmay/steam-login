@@ -502,22 +502,10 @@ string FindKey(List<string> all, string key, bool isUpperCase = false)
     return "";
 }
 
-if (args.Length == 2 && args[0] == "customurl"){
-    var url = args[1]
-        .Replace("thinkmay://","") 
-        .Replace("/","");
-    
-    var res = Base64Decode(url).Split(":");
-    if (Login(res[0],res[1]))
-        Environment.Exit(0);
-    else 
-        Environment.Exit(-1);
-} else if (args.Length == 3 && args[0] == "login"){
+if (args.Length == 3 && args[0] == "login"){
     if (Login(args[1],args[2]))
         Environment.Exit(0);
     else 
         Environment.Exit(-1);
-} else if (args.Length == 1 && args[0] == "logout"){
-    Close();
-} else 
-    RegisterCustomURL();
+} else if (args.Length == 1 && args[0] == "logout")
+    Close()
