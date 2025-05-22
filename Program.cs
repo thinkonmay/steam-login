@@ -13,6 +13,7 @@ using Win32Interop.WinHandles;
 
 var path = GetSteamPath();
 var dir = Path.GetDirectoryName(path);
+var locale = new LocalizationHelper("localization");
 
 IEnumerable<Process> GetChildProcesses(Process process)
 {
@@ -143,8 +144,7 @@ void InvokeButton(string name) {
 
                     window.Focus();
                     IterateElements(window,element => {
-                        if (element.Name.ToLower()  == (name)) {
-                            Console.WriteLine(element.Name);
+                        if (element.Name.ToLower()  == name) {
                             element.Click();
                             return false;
                         }
@@ -439,27 +439,13 @@ Login(string username, string password) {
     return false;
 }
 
-string Base64Encode(string plainText) 
-{
-    var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-    return System.Convert.ToBase64String(plainTextBytes);
-}
-
-string Base64Decode(string base64EncodedData) 
-{
-    var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
-    return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
-}
-
- var translations = LocalizationHelper.GetLocalizedValues("SignIn_Title");
-
 
 bool CheckExistKey(List<string> all, string key, bool isUpperCase = false)
 {
     if (all.Count == 0)
         return false;
 
-    var trans = LocalizationHelper.GetLocalizedValues(key);
+    var trans = locale.GetLocalizedValues(key);
     if (isUpperCase)
         trans = trans.Select(x => x.ToUpper()).ToArray();
 
@@ -483,7 +469,7 @@ string FindKey(List<string> all, string key, bool isUpperCase = false)
     if (all.Count == 0)
         return "";
 
-    var trans = LocalizationHelper.GetLocalizedValues(key);
+    var trans = locale.GetLocalizedValues(key);
     if (isUpperCase)
         trans = trans.Select(x => x.ToUpper()).ToArray();
 
@@ -499,6 +485,7 @@ string FindKey(List<string> all, string key, bool isUpperCase = false)
 
     }
 
+    Console.WriteLine($"failed to find key {key}");
     return "";
 }
 
