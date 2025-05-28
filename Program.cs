@@ -1,8 +1,5 @@
-﻿using System.Buffers.Text;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Management;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
@@ -83,21 +80,6 @@ string GetSteamPath()
     return val.ToString().Split("\"")[1];
 }
 
-void RegisterCustomURL()
-{
-    var  path = Process.GetCurrentProcess().MainModule.FileName;
-    var ukey = Registry.CurrentUser.OpenSubKey("Software", true);
-    ukey = ukey.OpenSubKey("Classes", true);
-
-    var key = ukey.CreateSubKey("thinkmay");
-    key.SetValue("URL Protocol", "");
-    key.SetValue("", "thinkmay procotol");
-    key.CreateSubKey(@"shell\open\command").SetValue(string.Empty, path + " customurl %1");
-
-    key.Close();
-    ukey.Close();
-    return;
-}
 
 bool IterateElements(AutomationElement element, Func<AutomationElement,bool> fun) {
     try {
@@ -375,16 +357,10 @@ void Close() {
     };
 
 
-    Process.Start(stopInfo).WaitForExit();
+    Process.Start(stopInfo)?.WaitForExit();
     WaitProcessExit();
 }
 
-void Localize(string elementId){
-    // read all file in list /localization
-    // find the id in json file match with elementId
-    // get specific value for every language
-    // => find match value and return true;
-}
 
 
 bool
@@ -496,3 +472,5 @@ if (args.Length == 3 && args[0] == "login"){
         Environment.Exit(-1);
 } else if (args.Length == 1 && args[0] == "logout")
     Close();
+else if (args.Length == 1 && args[0] == "path")
+    Console.WriteLine($"{path}");
