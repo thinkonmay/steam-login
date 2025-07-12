@@ -347,6 +347,7 @@ void ClickButtonPrev(string name) {
 }
 
 void Close() {
+    ClearAutoLoginUserKeyValues();
     var stopInfo = new ProcessStartInfo{
         FileName =  path,
         WorkingDirectory = dir,
