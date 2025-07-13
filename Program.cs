@@ -394,6 +394,7 @@ void Close() {
 
 bool
 Login(string username, string password) {
+    DeleteSteamLoginUsers();
     if (SteamIsRunning())
         Close();
 
