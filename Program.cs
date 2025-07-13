@@ -59,9 +59,12 @@ void ClearSteamUserDataFolder(string steamPath)
 void ClearAutoLoginUserKeyValues()
 {
     RegistryKey localKey;
-    if (Environment.Is64BitOperatingSystem) {
+    if (Environment.Is64BitOperatingSystem)
+    {
         localKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64);
-    } else {
+    }
+    else
+    {
         localKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32);
     }
 
@@ -70,6 +73,31 @@ void ClearAutoLoginUserKeyValues()
     localKey.SetValue("RememberPassword", 0, RegistryValueKind.DWord);
     localKey.Close();
 }
+
+void DeleteSteamLoginUsers()
+{
+    // Đường dẫn mặc định đến file loginusers.vdf
+    string steamPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam", "config");
+    string loginUsersFile = Path.Combine(steamPath, "loginusers.vdf");
+
+    if (File.Exists(loginUsersFile))
+    {
+        try
+        {
+            File.Delete(loginUsersFile);
+            Console.WriteLine("Đã xóa loginusers.vdf thành công.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Lỗi khi xóa loginusers.vdf: " + ex.Message);
+        }
+    }
+    else
+    {
+        Console.WriteLine("Không tìm thấy file loginusers.vdf.");
+    }
+}
+
 
 string GetSteamPath()
 {
@@ -407,6 +435,7 @@ Login(string username, string password) {
 
 
             InvokeButton("LIBRARY"); //todo: find the new way to invoke this button, such as script import
+            DeleteSteamLoginUsers();
             Console.WriteLine("Login success");
             return true;
         }
