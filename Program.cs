@@ -76,26 +76,12 @@ void ClearAutoLoginUserKeyValues()
 
 void DeleteSteamLoginUsers()
 {
-    // Đường dẫn mặc định đến file loginusers.vdf
     string steamPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam", "config");
     string loginUsersFile = Path.Combine(steamPath, "loginusers.vdf");
-
-    if (File.Exists(loginUsersFile))
-    {
-        try
-        {
-            File.Delete(loginUsersFile);
-            Console.WriteLine("Đã xóa loginusers.vdf thành công.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Lỗi khi xóa loginusers.vdf: " + ex.Message);
-        }
-    }
-    else
-    {
-        Console.WriteLine("Không tìm thấy file loginusers.vdf.");
-    }
+    if (File.Exists(loginUsersFile)) {
+        File.Delete(loginUsersFile);
+        Console.WriteLine("Deleted loginusers.vdf");
+    } else Console.WriteLine($"unable to find steam at path {loginUsersFile}");
 }
 
 
@@ -315,6 +301,54 @@ void ClickButton(string name) {
         }
     }
 }
+
+AutomationElement? GetRawElement(string name) {
+    var automation = new UIA3Automation();
+    foreach (var proc in Process.GetProcessesByName("steam"))
+    {
+        foreach (var child in GetChildProcesses(proc))
+        {
+            foreach (var hndl in EnumerateProcessWindowHandles(child))
+            {
+                try {
+                    var window = automation.FromHandle(new WindowHandle(hndl).RawPtr);
+                    if (window.Name == "")
+                        continue;
+                    else if (window.Name == "MSCTFIME UI" || 
+                             window.Name == "Default IME") 
+                        continue;
+                    else if (window.Name == "Steam Settings" || 
+                             window.Name == "Friends List") {
+                        window.AsWindow().Close();
+                        continue;
+                    }
+
+
+                    window.Focus();
+
+                    AutomationElement? ele = null;
+                    IterateElements(window,element => {
+                        if (element.ControlType == ControlType.Button && element.Name.Contains(name)) {
+                            ele = element;
+                            return false;
+                        }
+
+                        return true;
+                    });
+
+                    if (ele != null) {
+                        return ele;
+                    }
+                } catch (Exception e){
+                    Console.WriteLine(e.Message + e.StackTrace);
+                }
+            }
+        }
+    }
+
+    return null;
+}
+
 void ClickButtonPrev(string name) {
     var automation = new UIA3Automation();
     foreach (var proc in Process.GetProcessesByName("steam"))
@@ -496,6 +530,20 @@ string FindKey(List<string> all, string key, bool isUpperCase = false)
     return "";
 }
 
+void PrintAllElements() 
+{
+    var all = GetAllElements();
+
+    // var name = FindKey(all,"Login_RememberMe_Short");
+    // if(name != "") {
+    //     var element = GetRawElement(name);
+    //     if (element != null) Console.WriteLine($"{element.ControlType}");
+    // }
+
+    all.ForEach(x => Console.WriteLine($"Element name: {x}"));
+}
+
+
 if (args.Length == 3 && args[0] == "login"){
     if (Login(args[1],args[2]))
         Environment.Exit(0);
@@ -505,3 +553,5 @@ if (args.Length == 3 && args[0] == "login"){
     Close();
 else if (args.Length == 1 && args[0] == "path")
     Console.WriteLine($"{path}");
+else if (args.Length == 1 && args[0] == "print")
+    PrintAllElements();
