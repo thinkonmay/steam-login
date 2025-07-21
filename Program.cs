@@ -409,6 +409,7 @@ void ClickButtonPrev(string name) {
 }
 
 void Close() {
+    DeleteSteamLoginUsers();
     ClearAutoLoginUserKeyValues();
     var stopInfo = new ProcessStartInfo{
         FileName =  path,
