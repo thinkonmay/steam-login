@@ -467,9 +467,9 @@ Login(string username, string password) {
             FillTextBox(FindKey(all, "Login_SignIn_WithAccountName", true), username);
             FillTextBox(FindKey(all, "Login_Password", true), password);
             ClickButton(FindKey(all, "Login_SignIn")); 
-        } else if (all.Any(x => x.Contains("LIBRARY")) || all.Any(x => x.Contains("STORE"))){
+        } else if (all.Any(x => x.Contains("LIBRARY")) || all.Any(x => x.Contains("STORE")) || all.Any(x => x.Contains("Menu"))){
 
-
+            
             InvokeButton("LIBRARY"); //todo: find the new way to invoke this button, such as script import
             DeleteSteamLoginUsers();
             Console.WriteLine("Login success");

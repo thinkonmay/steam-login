@@ -8504,5 +8504,8 @@
     "ControllerConfigurator_Interstitial_NonVerified_Config_Title": "Bố cục chính thức cho Team Fortress 2",
     "ControllerConfigurator_Interstitial_NonVerified_Config_Description": "Bố cục điều khiển tiêu chuẩn",
     "ControllerSource_ModeShift_Header": "Chuyển chế độ - %1$s",
-    "ControllerSource_ModeShift_Subheader": "Đang dùng: %1$s"
+    "ControllerSource_ModeShift_Subheader": "Đang dùng: %1$s",
+    "Login_SignIn_WithAccountName":"ĐĂNG NHẬP BẰNG TÊN TÀI KHOẢN",
+    "Login_SignIn":"Đăng nhập",
+    "Login_Password": "mật khẩu"
 }
