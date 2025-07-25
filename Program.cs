@@ -252,9 +252,9 @@ void WaitProcessExit() {
     {
         foreach (var child in GetChildProcesses(proc))
         {
-            child.WaitForExit();
+            child.WaitForExit(3000);
         }
-        proc.WaitForExit();
+        proc.WaitForExit(3000);
     }
 }
 void ClickButton(string name) {
@@ -421,7 +421,7 @@ void Close() {
     };
 
 
-    Process.Start(stopInfo)?.WaitForExit();
+    Process.Start(stopInfo)?.WaitForExit(3000);
     WaitProcessExit();
 }
 
